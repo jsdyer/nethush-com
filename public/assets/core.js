@@ -95,3 +95,37 @@ export function readChecklist(raw, knownTasks) {
     return [...new Set(value.done.filter(id => knownTasks.includes(id)))];
   } catch { return []; }
 }
+
+export function inspectLink(input) {
+  const text=input.trim();
+  if (!text || text.length>20000 || /[\s\u0000-\u001f\u007f\\]/u.test(text) || !/^https?:\/\//i.test(text)) throw new Error('Enter a complete http:// or https:// address without spaces or backslashes.');
+  let url;try { url=new URL(text); } catch { throw new Error('This address could not be parsed.'); }
+  if (!['http:','https:'].includes(url.protocol) || !url.hostname) throw new Error('Only HTTP and HTTPS web addresses are supported.');
+  const keys=[...url.searchParams.keys()];
+  const tracking=[...new Set(keys.filter(key=>key.toLowerCase().startsWith('utm_') || TRACKING_KEYS.has(key.toLowerCase())))];
+  const notes=[];
+  if (url.username || url.password) notes.push('Contains sign-in information before @. That is not the destination host. Do not share this link; credentials are hidden here.');
+  if (url.protocol==='http:') notes.push('HTTP does not encrypt the connection.');
+  if (url.hostname.split('.').some(label=>label.startsWith('xn--'))) notes.push('Internationalised domain: the ASCII (Punycode) hostname is shown. Check it carefully for lookalike names.');
+  if (url.port) notes.push('Uses a non-default port: '+url.port+'.');
+  if (tracking.length) notes.push('Known tracking parameters: '+tracking.join(', ')+'. The link cleaner can remove many common identifiers.');
+  if (url.hash) notes.push('Includes a fragment. It can contain identifiers or information used by page scripts.');
+  if (!notes.length) notes.push('No listed structural flags found. This is not a guarantee that the link is safe or free of identifiers.');
+  return {host:url.hostname,scheme:url.protocol.slice(0,-1).toUpperCase(),port:url.port || (url.protocol==='https:'?'443 (default)':'80 (default)'),path:url.pathname,queryCount:keys.length,tracking,notes};
+}
+
+// Web Crypto reads the full input; the cap bounds memory use on small devices.
+export const MAX_FILE_BYTES=64*1024*1024;
+export async function digestBytes(bytes, source=globalThis.crypto) {
+  if (!(bytes instanceof ArrayBuffer) && !ArrayBuffer.isView(bytes)) throw new Error('Expected file bytes.');
+  if (bytes.byteLength>MAX_FILE_BYTES) throw new Error('Choose a file no larger than 64 MiB.');
+  if (!source?.subtle) throw new Error('SHA-256 requires a secure page context and Web Crypto support.');
+  const result=await source.subtle.digest('SHA-256',bytes);
+  return Array.from(new Uint8Array(result),b=>b.toString(16).padStart(2,'0')).join('');
+}
+export function compareDigest(actual, expected) {
+  const candidate=expected.trim();
+  if (!candidate) return 'empty';
+  if (!/^[a-f\d]{64}$/i.test(candidate)) return 'error';
+  return actual.toLowerCase()===candidate.toLowerCase()?'match':'mismatch';
+}

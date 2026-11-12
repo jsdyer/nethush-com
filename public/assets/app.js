@@ -1,8 +1,8 @@
-import {cleanLink, generatePassword, stripPngMetadata, readChecklist} from './core.js';
+import {cleanLink, generatePassword, stripPngMetadata, readChecklist, inspectLink, digestBytes, compareDigest, MAX_FILE_BYTES} from './core.js';
 const $ = id => document.getElementById(id);
 const pages = [...document.querySelectorAll('.view')];
 const routes = new Set(pages.map(page => page.id));
-const labels = {home:'HUSH Reader',toolkit:'Privacy toolkit',cleaner:'Link cleaner',passwords:'Password generator',photos:'Photo scrubber',browser:'Browser check',checklist:'Privacy checklist',guides:'Field notes',directory:'Good neighbours',about:'Then & now',privacy:'Our privacy promise'};
+const labels = {home:'HUSH Reader',toolkit:'Privacy toolkit',cleaner:'Link cleaner',passwords:'Password generator',photos:'Photo scrubber',inspector:'Link inspector',checksum:'File checksum',browser:'Browser check',checklist:'Privacy checklist',guides:'Field notes',directory:'Good neighbours',about:'Then & now',privacy:'Our privacy promise'};
 function route(initial=false) {
   const requested = location.hash.slice(1);
   // Preserve the accessible skip-to-content anchor without hiding the active view.
@@ -13,6 +13,7 @@ function route(initial=false) {
     if (link.dataset.route === current) link.setAttribute('aria-current','page');
     else link.removeAttribute('aria-current');
   }
+  $('local-strip').hidden=current==='home';
   document.title = `net HUSH — ${labels[current]}`;
   if (!initial) { $('main').focus({preventScroll:true}); if (window.scrollY > 250) $('main').scrollIntoView({block:'start'}); }
 }
@@ -182,3 +183,56 @@ $('reset-checklist').addEventListener('click',()=>{
   try { localStorage.removeItem(storageKey); $('storage-status').textContent='Checklist reset. Nothing saved in this browser.'; }
   catch { $('storage-status').textContent='Checkmarks cleared in this tab. Clear this site’s browser storage to remove any saved copy.'; }
 });
+
+function clearInspection() {
+  $('inspect-result').hidden=true; $('inspect-host').textContent='';
+  $('inspect-details').replaceChildren(); $('inspect-notes').replaceChildren(); $('inspect-error').textContent='';
+}
+$('inspect-url').addEventListener('input',clearInspection);
+$('clear-inspect').addEventListener('click',()=>{ $('inspect-url').value=''; clearInspection(); });
+$('inspect-example').addEventListener('click',()=>{
+  $('inspect-url').value='https://trusted.example@actual-destination.example/read?utm_source=email';
+  $('inspect-form').requestSubmit();
+});
+$('inspect-form').addEventListener('submit',event=>{
+  event.preventDefault();clearInspection();
+  try {
+    const result=inspectLink($('inspect-url').value);
+    $('inspect-host').textContent=result.host;
+    for (const [label,value] of [['Protocol',result.scheme],['Port',result.port],['Path',result.path],['Query parameters',String(result.queryCount)+' (values not displayed)']]) {
+      const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');
+      dt.textContent=label;dd.textContent=value;row.append(dt,dd);$('inspect-details').append(row);
+    }
+    for (const note of result.notes) { const li=document.createElement('li');li.textContent=note;$('inspect-notes').append(li); }
+    $('inspect-result').hidden=false;
+  } catch(error) { $('inspect-error').textContent=error.message; }
+});
+
+let checksumJob=0, calculatedDigest='';
+function renderComparison() {
+  const output=$('checksum-comparison');output.textContent='';delete output.dataset.result;
+  if (!calculatedDigest) return;
+  const result=compareDigest(calculatedDigest,$('checksum-expected').value);
+  output.dataset.result=result;
+  output.textContent={empty:'Paste an expected checksum above to compare.',error:'Enter exactly 64 hexadecimal characters (0–9, a–f), without a filename.',match:'Match — the file matches the supplied SHA-256 checksum.',mismatch:'Does not match — this file differs from the supplied checksum.'}[result];
+}
+function clearChecksum() {
+  checksumJob++;calculatedDigest='';$('checksum-file').value='';$('checksum-expected').value='';$('checksum-output').value='';
+  $('checksum-result').hidden=true;$('checksum-status').textContent='Choose a file to calculate its fingerprint.';renderComparison();
+}
+$('clear-checksum').addEventListener('click',clearChecksum);
+$('checksum-expected').addEventListener('input',renderComparison);
+$('checksum-file').addEventListener('change',async()=>{
+  const file=$('checksum-file').files?.[0],job=++checksumJob;
+  calculatedDigest='';$('checksum-output').value='';$('checksum-result').hidden=true;renderComparison();
+  if (!file) { $('checksum-status').textContent='Choose a file to calculate its fingerprint.';return; }
+  try {
+    if (file.size>MAX_FILE_BYTES) throw new Error('Choose a file no larger than 64 MiB. Use sha256sum for larger files.');
+    $('checksum-status').textContent='Calculating SHA-256 locally…';
+    const bytes=await file.arrayBuffer();if (job!==checksumJob) return;
+    const digest=await digestBytes(bytes);if (job!==checksumJob) return;
+    calculatedDigest=digest;$('checksum-output').value=digest;$('checksum-result').hidden=false;
+    $('checksum-status').textContent=`${file.name} · ${file.size.toLocaleString()} bytes · calculated locally`;renderComparison();
+  } catch(error) { if(job===checksumJob) $('checksum-status').textContent=error.message; }
+});
+window.addEventListener('pagehide',()=>{ clearChecksum();$('inspect-url').value='';clearInspection(); });

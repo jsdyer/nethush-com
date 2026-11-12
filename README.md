@@ -2,9 +2,13 @@
 
 **Read the web. Leave less behind.**
 
-A modern successor to the original 2001 anonymous-surfing site at **nethush.com**. The main application is now a quiet daily reading room. The familiar blue-and-white identity remains, with a smooth curve around the logo and no protruding bars.
+A modern successor to the original 2001 anonymous-surfing site at **nethush.com**. The main application is now a quiet daily reading room. The familiar blue-and-white identity remains, with a smooth white curve around the logo and a continuous blue base aligned above the left menu. Headlines appear directly below the compact masthead; source and shelf settings sit beneath the edition.
 
 [Private hosted preview](https://nethush-reborn.asdfg.chatgpt.site/) · [Deployment](docs/DEPLOYMENT.md) · [Security model](SECURITY.md)
+
+![HUSH Reader desktop preview](docs/reader-preview.jpg)
+
+A project by [JSD Technologies](https://jsd.technology).
 
 ## The daily reason to visit
 
@@ -18,6 +22,8 @@ Choose sources, open a finite edition of up to 12 recent stories, read plain-tex
 - JSON backup/export and validated merge import, plus OPML export for other readers.
 - Clear source health, fetched times, failure handling and stale-cache labels. No fabricated news or silent sample-data fallback.
 
+Feeds refresh automatically on the first visit or manual refresh after the shared 20-minute cache expires. There is no background scheduler and idle tabs do not poll.
+
 The daily edition selects dated items from the last 14 days. Some feeds publish weekly or less frequently, and no story is relabelled as today's news. The edition can change when publishers update their feeds. All stories includes older and undated items. The catalogue is operator-maintained; arbitrary user-entered feed URLs and OPML import are not supported. OPML is export-only.
 
 ## Privacy architecture
@@ -28,7 +34,7 @@ Feed HTML is never rendered. Only text excerpts are displayed, with attribution 
 
 ## The toolkit is still here
 
-Link cleaner, cryptographically random password generator, local photo metadata scrubber, browser footprint check, privacy checklist, guides and history. Tool inputs stay in the browser. No application accounts, analytics, ads, third-party fonts, database or runtime dependencies.
+Link cleaner, link inspector (actual hostname, IDN/credentials/port/tracking flags without visiting), SHA-256 file checksum calculator and comparison (64 MiB cap, no upload), cryptographically random password generator, local photo metadata scrubber, browser footprint check, privacy checklist, guides and history. Tool inputs stay in the browser. No application accounts, analytics, ads, third-party fonts, database or runtime dependencies.
 
 ## Run locally
 
