@@ -1,0 +1,10 @@
+{
+  "name": "nethush-com",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A small, browser-local privacy toolkit. The 2001 net HUSH, rebooted.",
+  "scripts": {"test": "node --test tests/*.test.js", "check": "node --check dist/assets/app.js && node --check dist/assets/core.js"},
+  "engines": {"node": ">=22"},
+  "license": "GPL-3.0-or-later"
+}
