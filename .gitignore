@@ -5,3 +5,10 @@ node_modules/
 *.tar.gz
 .DS_Store
 dist/
+var/
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm

@@ -34,11 +34,17 @@ Feed HTML is never rendered. Only text excerpts are displayed, with attribution 
 
 ## The toolkit is still here
 
-Link cleaner, link inspector (actual hostname, IDN/credentials/port/tracking flags without visiting), SHA-256 file checksum calculator and comparison (64 MiB cap, no upload), cryptographically random password generator, local photo metadata scrubber, browser footprint check, privacy checklist, guides and history. Tool inputs stay in the browser. No application accounts, analytics, ads, third-party fonts, database or runtime dependencies.
+Link cleaner, link inspector (actual hostname, IDN/credentials/port/tracking flags without visiting), SHA-256 file checksum calculator and comparison (64 MiB cap, no upload), cryptographically random password generator, local photo metadata scrubber, browser footprint check, privacy checklist, guides and history. Tool inputs stay in the browser. No reader accounts, ads, third-party fonts or runtime npm dependencies. Custom aggregate measurements and a protected admin control room use SQLite on Node or D1 in the hosted preview; no visitor identifiers are stored.
+
+## Administration
+
+Open `/admin` for aggregate statistics, feed health and controls, reader copy, cache settings, measurement retention, exports and an admin action log. No raw visitor event log, stored IPs, fingerprints or third-party analytics. Counts are not unique visitors. See [the complete admin and measurement contract](docs/ADMIN.md).
+
+The hosted preview uses owner-only platform sign-in. Self-hosted deployments use a locally configured password (`npm run admin:password`); no default credentials are shipped.
 
 ## Run locally
 
-Node.js **24+**, no package installation required:
+Node.js **24+**, no package installation required. SQLite migrations run at startup; the default database is `var/nethush.sqlite` (ignored by Git):
 
 ```sh
 npm start
@@ -64,6 +70,10 @@ The dependency-free build embeds the public assets and feed service into `dist/s
 - `server/local.mjs`: Node adapter for local use / Apache reverse proxy
 - `public/assets/catalog.js`: operator-maintained catalogue
 - `public/assets/reader-core.js`: feed parsing, plain text, daily selection and backup validation
+- `public/admin/`: custom administration UI
+- `server/store.js`, `server/admin.js`, `server/application.js`: persistent controls, aggregates and authorization
+- `server/auth-node.mjs`: self-hosted admin authentication
+- `drizzle/`: SQL migrations, also used by the Node adapter
 - `tests/`: Node built-in test runner
 - `docs/`: deployment, validation and future direction
 

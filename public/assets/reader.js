@@ -12,7 +12,7 @@ function sourceName(id){return SOURCES.find(x=>x.id===id)?.name||id;}
 function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
 function button(text,handler,cls='secondary'){const b=el('button',text,cls);b.type='button';b.addEventListener('click',handler);return b;}
 function sourceControls(){
- $('reader-sources').replaceChildren();for(const source of SOURCES){const label=el('label',undefined,'source-option');const input=document.createElement('input');input.type='checkbox';input.checked=state.sources.includes(source.id);input.addEventListener('change',()=>{state.sources=input.checked?[...state.sources,source.id]:state.sources.filter(x=>x!==source.id);page=1;persist();render();});label.append(input,el('span',source.name));label.append(el('small',source.topic));$('reader-sources').append(label);}
+ $('reader-sources').replaceChildren();for(const source of SOURCES){const label=el('label',undefined,'source-option');const input=document.createElement('input');input.type='checkbox';input.checked=state.sources.includes(source.id);input.disabled=health.some(h=>h.id===source.id&&h.disabled);label.title=input.disabled?'Paused by the site operator.':'';input.addEventListener('change',()=>{state.sources=input.checked?[...state.sources,source.id]:state.sources.filter(x=>x!==source.id);page=1;persist();render();});label.append(input,el('span',source.name));label.append(el('small',source.topic));$('reader-sources').append(label);}
 }
 function status(){
  $('feed-health').replaceChildren();for(const source of SOURCES){const h=health.find(x=>x.id===source.id);const row=el('p');row.append(el('strong',source.name+' — '));row.append(document.createTextNode(h?(h.error||'Available')+(h.fetchedAt?' · fetched '+new Date(h.fetchedAt).toLocaleString():''):'Not checked yet'));$('feed-health').append(row);}
@@ -55,9 +55,9 @@ async function load(){
   for(const source of SOURCES){const feed=result.feeds.find(f=>f.id===source.id);if(!feed){health.push({id:source.id,error:'Source missing from response.'});continue;}health.push({...feed,xml:undefined});if(feed.xml)try{next.push(...parseFeed(feed.xml,source));}catch{health[health.length-1].error='Feed could not be read.';}}
   const seen=new Set();stories=next.filter(x=>{if(seen.has(x.url))return false;seen.add(x.url);return true;}).sort((a,b)=>(b.date||'').localeCompare(a.date||''));loaded=true;
   const ok=health.filter(h=>!h.error).length;
-  $('reader-status').textContent=`${ok} of ${SOURCES.length} sources available · checked ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}. RSS / Atom · 20-minute shared cache.`;
+  $('reader-status').textContent=`${ok} of ${SOURCES.length} sources available · checked ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}. RSS / Atom · shared server cache.`;
  }catch{ $('reader-status').textContent='Could not reach the feed service. Your saved shelf still works. Retry later; self-hosted installs need the reader server running.'; }
- finally{loading=false;$('refresh-reader').disabled=false;status();render();}
+ finally{loading=false;$('refresh-reader').disabled=false;status();sourceControls();render();}
 }
 for(const b of document.querySelectorAll('[data-reader-mode]'))b.addEventListener('click',()=>{mode=b.dataset.readerMode;page=1;render();});
 $('open-reader-settings').addEventListener('click',()=>{const settings=$('reader-settings');settings.open=true;settings.scrollIntoView({block:'start'});settings.querySelector('summary').focus({preventScroll:true});});

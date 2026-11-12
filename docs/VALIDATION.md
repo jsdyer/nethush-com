@@ -27,3 +27,13 @@ The new desktop layout was checked in Chromium: continuous blue base beneath the
 The browser file-chooser automation stalled and reset the session; the checksum file-selection flow and a new mobile visual pass could not be completed. The checksum algorithm and comparison logic were verified independently in the Node suite.
 
 API reference used for the browser-local digest implementation: [MDN SubtleCrypto.digest](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest).
+
+## Custom control room / version 3
+
+46 Node tests passed, including protected admin APIs, the hosted owner allowlist, rejection of spoofed platform headers on Node, scrypt password storage, session expiry/revocation, CSRF and Origin checks, global login throttling, settings revisions, escaped announcements, strict counter payloads, GPC/DNT and off-switch behaviour, concurrent atomic increments, retention, export minimization, purge confirmation, paused sources and forced refresh limits.
+
+JavaScript syntax checks passed across browser, server and scripts. The generated Worker was exercised with a real in-memory SQLite adapter: unauthenticated admin requests were rejected, authorized dashboard reads succeeded and a public page load created an aggregate count. A SQLite backup passed integrity checking, mode-0600 verification and overwrite-refusal testing.
+
+The browser rendered the protected local admin sign-in screen. The local password flow is covered by server integration tests; no credential-entry workaround was used for browser automation. No invented visitor data is seeded. The preview and production database are separate; local test credentials and databases are ignored by Git and absent from deployment archives.
+
+The deployed admin URL correctly remained behind the platform sign-in gate. Full browser interaction with the dashboard was not completed because this browser had no signed-in owner session. The access-control and operation tests above exercised the actual handlers and database; they do not replace a visual dashboard walkthrough.
