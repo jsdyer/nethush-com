@@ -1,11 +1,13 @@
-# A few directions to try
+# Where HUSH Reader can go next
 
-These are future ideas, not working features or services. Keep the first release small and inspectable.
+The daily application is implemented: shared feed collection, local source choices, a finite edition, unread tracking, a saved shelf and portable backups. The privacy tools support that routine.
 
-1. **Offline privacy field kit.** A versioned, downloadable toolkit with checksums and documented local serving. Useful on a Linux laptop while travelling. Prefer explicit updates over an invisible service worker.
-2. **Quiet homelab field notes.** Short, reproducible guides to local DNS, reducing unnecessary outbound requests, encrypted backups and keeping dashboards private. Differentiate privacy from anonymous routing.
-3. **Consent and data-request worksheet.** Local-only templates and an exportable tracker for access/deletion requests. Research current Canadian legal requirements separately; do not imply that a generic template guarantees compliance.
-4. **Self-hosted temporary sharing.** A separate, opt-in service with expiry and deletion semantics, abuse controls, rate limits, a documented threat model and audited cryptographic components. Do not bolt an unaudited encryption scheme onto the static toolkit or claim “zero knowledge” without evidence.
-5. **An original-site archive.** A lightweight history page with selected historical material, after confirming publication rights. No live archive embeds or third-party tracking resources.
+Potential next work, not shipped features:
 
-A new public proxy is deliberately not implemented. Proxying modern sites brings substantial abuse, compatibility, credential-handling and maintenance obligations, and cannot honestly promise universal anonymity.
+1. Broaden the operator-reviewed catalogue with Canadian independent publishers, privacy projects, Linux communities and personal blogs. Verify direct feed endpoints and content permissions.
+2. Add user feed subscriptions only after designing URL/redirect/DNS-rebinding protections, rate limits and a privacy model that does not expose personal subscription lists upstream.
+3. Offer a versioned offline pack with explicit updates. Saved excerpts currently work in a loaded page; there is no offline service worker or offline cold-start guarantee.
+4. Explore an encrypted cross-device reading shelf with established audited components. Current browser storage and JSON backups are not encrypted by the app.
+5. Add a maintained archive of the original net HUSH after confirming publication rights.
+
+A universal anonymous browsing proxy is not implemented. HUSH Reader provides a narrower useful boundary: browse publisher feed excerpts without loading publisher websites. Opening original articles connects directly to them.

@@ -1,13 +1,19 @@
-# Validation — 12 November 2026
+# Validation — HUSH Reader / 12 November 2026
 
-- Node built-in test runner: 14 tests passed. URL validation and lossless query handling, signed-link protection, secure random selection, every password-group combination, PNG chunk filtering, checklist corruption tolerance, local navigation, and network/HTML-injection regression guards.
-- Both JavaScript modules passed syntax checks.
-- Chromium desktop: homepage renders; quick cleaner removed two tracking parameters and kept the ID/fragment; full cleaner example removed three tracking parameters.
-- Browser password generator produced a 24-character result with the selected groups.
-- Browser photo scrubber processed a synthetic 120 × 80 PNG containing a private test comment. The downloaded result decoded successfully in Pillow at 120 × 80, had no embedded metadata in Pillow's `info`, and did not contain the test comment bytes.
-- Browser footprint details rendered after a click. Photo clearing removed its preview.
-- Checklist opt-in survived reload; reset followed by reload returned to zero and disabled persistence.
-- Responsive layout inspected at 545 and 340 CSS pixels using browser zoom. Document width stayed within the viewport. Full link-cleaner interaction also succeeded at 340 CSS pixels. This is a narrow-viewport check, not a physical-device certification.
-- Desktop screenshot: [preview.jpg](preview.jpg).
+## Automated
 
-Limits: browser QA used Chromium only. Automated tests are not a security audit. Hosting/DNS/TLS on nethush.com were not configured or tested. The private preview uses its own hosting platform. Third-party browser-extension console errors were observed; no application error was observed during the exercised flows.
+25 Node tests passed. The original privacy-tool tests remain. Added checks cover feed text handling, safe link schemes, bounded backup validation, finite recent/balanced daily selection, XML entity rejection, fixed upstream URLs, cookie omission, redirect refusal, cache reuse, labelled stale fallback, failure backoff, expiry, response size caps, API method/query rejection and absence of publisher HTML injection / tracking APIs in the reader.
+
+JavaScript syntax checks and the generated Worker's ESM validation passed. No third-party runtime packages are required.
+
+## Browser
+
+Chromium successfully loaded **all five real feeds** through the local reader preview. RSS and Atom entries appeared in the daily edition with source names and publication dates; Mozilla's older items remained outside the 14-day daily selection.
+
+Verified excerpt expansion, local search by source name, saving a story, opt-in persistence across reload, JSON backup download and re-import without duplicate saved stories, and the end-of-edition state after marking the edition read. No fake headlines or fixture feed content were used in the browser check.
+
+The browser session later blocked further observation under its URL policy, preventing a fresh full-page screenshot and a new narrow-viewport visual pass. The prior release's narrow-viewport toolkit checks are not a substitute for a device-level test of this new reader. `docs/preview.jpg` is the historical version-1 toolkit screenshot, not the current homepage.
+
+## Limits
+
+Not an independent security audit. Live sources can change format, return redirects, or become unavailable; the UI and service handle this explicitly. The hosted preview has a platform sign-in gate. nethush.com DNS/TLS/origin deployment has not been changed.

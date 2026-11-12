@@ -2,7 +2,7 @@ import {cleanLink, generatePassword, stripPngMetadata, readChecklist} from './co
 const $ = id => document.getElementById(id);
 const pages = [...document.querySelectorAll('.view')];
 const routes = new Set(pages.map(page => page.id));
-const labels = {home:'A quieter web',cleaner:'Link cleaner',passwords:'Password generator',photos:'Photo scrubber',browser:'Browser check',checklist:'Privacy checklist',guides:'Field notes',directory:'Good neighbours',about:'Then & now',privacy:'Our privacy promise'};
+const labels = {home:'HUSH Reader',toolkit:'Privacy toolkit',cleaner:'Link cleaner',passwords:'Password generator',photos:'Photo scrubber',browser:'Browser check',checklist:'Privacy checklist',guides:'Field notes',directory:'Good neighbours',about:'Then & now',privacy:'Our privacy promise'};
 function route(initial=false) {
   const requested = location.hash.slice(1);
   // Preserve the accessible skip-to-content anchor without hiding the active view.

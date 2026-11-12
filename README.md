@@ -1,74 +1,64 @@
-# net HUSH
+# net HUSH · HUSH Reader
 
-**A little less noise. A little more privacy.**
+**Read the web. Leave less behind.**
 
-A modern reboot of the original 2001 net HUSH anonymous-surfing site, built for **nethush.com**. The familiar blue-and-white masthead, curved wordmark area, narrow sidebar and simple section bars are back. Today's version is an independent privacy toolkit whose inputs stay in the browser.
+A modern successor to the original 2001 anonymous-surfing site at **nethush.com**. The main application is now a quiet daily reading room. The familiar blue-and-white identity remains, with a smooth curve around the logo and no protruding bars.
 
-[Source](https://github.com/jsdyer/nethush-com) · [Deployment](docs/DEPLOYMENT.md) · [Security model](SECURITY.md)
+[Private hosted preview](https://nethush-reborn.asdfg.chatgpt.site/) · [Deployment](docs/DEPLOYMENT.md) · [Security model](SECURITY.md)
 
-![net HUSH desktop preview](docs/preview.jpg)
+## The daily reason to visit
 
-## Working features
+Choose sources, open a finite edition of up to 12 recent stories, read plain-text publisher excerpts, and keep the worthwhile ones on your reading shelf. No algorithmic popularity ranking or endless scroll.
 
-- **Link cleaner:** removes known campaign/click parameters without requesting the destination. Preserves remaining raw query encoding and order. Fragments are optional; signed/access-token links are rejected unchanged.
-- **Password generator:** 12–64 characters, selectable character groups, `crypto.getRandomValues`, unbiased rejection sampling, and every selected group represented. No `Math.random`, password storage or API call.
-- **Photo scrubber:** JPEG, PNG and WebP decoded locally, exported as a fresh PNG, then stripped of non-display PNG chunks. Generic output filename; original untouched. 20 MiB / 25 MP limits. No image upload.
-- **Browser check:** click-to-run display of a small set of browser-reported values, with no network probes, fingerprint database or invented privacy score.
-- **Privacy checklist:** eight practical steps, in memory by default. Optional browser-local persistence; turning it off or resetting removes the saved checklist.
-- **Field notes, project directory, history and an explicit privacy statement.**
+- Live RSS / Atom collection through a shared server cache.
+- Five initial sources: EFF, Schneier on Security, Planet Debian, selfh.st and Mozilla Hacks.
+- Daily edition balanced across selected sources; unread, all-stories and saved views.
+- Local search, read/unread marks, save/remove, pagination, and “mark edition read”.
+- Optional browser-local persistence, disabled by default. Reading selections and history are never sent to the feed API.
+- JSON backup/export and validated merge import, plus OPML export for other readers.
+- Clear source health, fetched times, failure handling and stale-cache labels. No fabricated news or silent sample-data fallback.
 
-No runtime dependencies, build step, external fonts, CDNs, analytics, accounts or database. HTML + CSS + vanilla JavaScript ES modules. All application assets are self-hosted. A restrictive CSP includes `connect-src 'none'` and `form-action 'none'`.
+The daily edition selects dated items from the last 14 days. Some feeds publish weekly or less frequently, and no story is relabelled as today's news. The edition can change when publishers update their feeds. All stories includes older and undated items. The catalogue is operator-maintained; arbitrary user-entered feed URLs and OPML import are not supported. OPML is export-only.
 
-This is **not an anonymous proxy or VPN**, does not change visitors' IPs, and is not an audited security product. The web host can still receive connection information. See [SECURITY.md](SECURITY.md).
+## Privacy architecture
+
+Every visitor receives the same feed collection. Source filtering, searching, read marks and saved excerpts stay in the browser. The server fetches the entire fixed catalogue, using shared caches, without forwarding visitor cookies, IPs, headers or selections upstream. Cache fills can still occur on visits; this is not a scheduled anonymity network.
+
+Feed HTML is never rendered. Only text excerpts are displayed, with attribution and original-article links. No publisher images, embedded players or scripts load in the reader. Opening an original article connects directly to its publisher. This is not a VPN, general web proxy, paywall bypass, full-article scraper or anonymity guarantee. The net HUSH host can still see visitor requests.
+
+## The toolkit is still here
+
+Link cleaner, cryptographically random password generator, local photo metadata scrubber, browser footprint check, privacy checklist, guides and history. Tool inputs stay in the browser. No application accounts, analytics, ads, third-party fonts, database or runtime dependencies.
 
 ## Run locally
 
-With Python 3:
+Node.js **24+**, no package installation required:
 
 ```sh
-python3 -m http.server 8000 --directory dist --bind 127.0.0.1
+npm start
 ```
 
-Open `http://127.0.0.1:8000`. Use localhost or HTTPS for secure browser APIs. Do not open `index.html` with `file://`; ES module loading may be blocked. PHP's local development server works too:
+Open `http://127.0.0.1:4173`. `PORT` and `HOST` are optional (default loopback binding). The process serves the application and `/api/edition`; restart after source changes. It honours standard proxy environment settings. Serve production through HTTPS using Apache or another reverse proxy. See [deployment instructions](docs/DEPLOYMENT.md).
 
-```sh
-php -S 127.0.0.1:8000 -t dist
-```
+A static-only copy of `public/` still supports the local tools, but **live reading requires the server endpoint**. The private preview is a Worker build of the same feed service, not a frozen news snapshot.
 
-Neither development server is for public production use. Apache can serve `dist/` directly with no PHP or MariaDB needed. This fits a LAMP server while keeping private inputs off the server.
-
-## Check the code
-
-Node.js 22 or newer, no dependency installation:
+## Check and build
 
 ```sh
 npm test
 npm run check
+npm run build
+node scripts/validate-artifact.mjs
 ```
 
-The tests cover raw URL preservation, unsafe schemes/credentials, signed links, random selection and password constraints, PNG metadata removal, corrupt checklist storage, navigation targets and accidental network/storage regressions.
+The dependency-free build embeds the public assets and feed service into `dist/server/index.js`, with an ESM `fetch` handler for Worker hosting. `.openai/hosting.json` retains the existing private preview identity. Generated `dist/` output is ignored in Git.
 
-## Project structure
+- `public/`: browser application and assets
+- `server/service.js`: fixed-source collector, shared-cache rules and hardened response handler
+- `server/local.mjs`: Node adapter for local use / Apache reverse proxy
+- `public/assets/catalog.js`: operator-maintained catalogue
+- `public/assets/reader-core.js`: feed parsing, plain text, daily selection and backup validation
+- `tests/`: Node built-in test runner
+- `docs/`: deployment, validation and future direction
 
-```text
-dist/                 Deploy only this directory
-  index.html          All views and content, including a no-JS reading fallback
-  assets/style.css    Responsive original-inspired layout
-  assets/app.js       UI, routing, clipboard, image processing, optional checklist storage
-  assets/core.js      Testable URL, randomness, PNG and storage parsing operations
-  .htaccess           Apache headers
-  _headers            Headers for static hosts that support this file
- tests/               Node built-in test runner
- docs/                Deployment, validation and possible future work
- .openai/hosting.json Private preview hosting configuration
-```
-
-The project uses hash navigation, so no rewrite rules or SPA fallback are required. Without JavaScript, all content sections remain readable and anchors work; tools require JavaScript. Mobile navigation becomes a horizontally scrollable strip. No service worker caches stale security-sensitive code.
-
-## Direction
-
-Practical, inspectable, self-hostable tools and plain-language education. Keep it simple. Potential next additions are in [docs/ROADMAP.md](docs/ROADMAP.md); they are not promised or implemented services.
-
-## Licence
-
-GPL-3.0-or-later. See [LICENSE](LICENSE). The original net HUSH name and history are retained as the owner's project identity; the licence does not imply endorsement of unrelated deployments.
+GPL-3.0-or-later. Copyright in publisher feed content remains with its respective authors. The original net HUSH identity does not imply endorsement of unrelated deployments.

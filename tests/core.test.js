@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {webcrypto} from 'node:crypto';
-import {cleanLink,generatePassword,secureIndex,CHARACTER_GROUPS,stripPngMetadata,readChecklist} from '../dist/assets/core.js';
+import {cleanLink,generatePassword,secureIndex,CHARACTER_GROUPS,stripPngMetadata,readChecklist} from '../public/assets/core.js';
 
 test('cleaner strips duplicate/case/encoded tracking keys, keeps meaningful parameters and fragment',()=>{
   const r=cleanLink('https://example.com/read?id=42&%75tm_source=one&utm_source=two&FBCLID=three&q=a%20b#chapter');
